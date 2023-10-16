@@ -172,7 +172,6 @@ class viewerWindow(QMainWindow):
     def on_dbclick_select(self):
         row = self.table_output.currentIndex().row()
         col = self.table_output.currentIndex().column()
-        print(self.output_model.index(row, col).data())
         
         image_path = self.result_path / self.output_model.index(row, col).data()
         image = ImageQt.ImageQt(Image.open(image_path))
