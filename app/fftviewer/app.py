@@ -27,7 +27,7 @@ APP_UI = WORKING_PATH / "gui.ui"
 class viewerWindow(QMainWindow):
     def __init__(self, config:str):
         super().__init__()
-        loadUi(APP_UI, self)
+        loadUi("./gui.ui", self)
         
         # menu
         self.actionOpen.triggered.connect(self.on_select_file_open)
