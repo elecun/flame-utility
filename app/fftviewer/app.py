@@ -152,14 +152,14 @@ class viewerWindow(QMainWindow):
 
                     # draw spectogram
                     plt.subplot(3, 1, 3)
-                    f, tt, Sxx = signal.spectrogram(_data, fs=self.sampling_freq)
-                    plt.pcolormesh(tt, f, Sxx, shading='gouraud')
+                    f, tt, Sxx = signal.spectrogram(_data, fs=self.sampling_freq, scaling='density')
+                    plt.pcolormesh(tt, f, Sxx, shading='gouraud', cmap='jet')
                     plt.title('Spectogram', fontsize=13)
                     plt.xlabel('Time(s)', fontsize=10, labelpad=5)
                     plt.ylabel('Frequency(Hz)', fontsize=10, labelpad=5)
                     
                     plt.tight_layout()
-                    plt.savefig(self.result_path / f'{col_head}.png')
+                    plt.savefig(self.result_path / f'{col_head}.png', dpi=100)
                     
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"{e}")
