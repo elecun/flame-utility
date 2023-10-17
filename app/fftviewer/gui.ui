@@ -57,7 +57,7 @@ color: rgb(0, 0, 0);</string>
     <widget class="QLineEdit" name="edit_sampling_freq">
      <property name="geometry">
       <rect>
-       <x>120</x>
+       <x>140</x>
        <y>25</y>
        <width>71</width>
        <height>21</height>
@@ -72,7 +72,7 @@ color: rgb(0, 0, 0);</string>
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>101</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
@@ -101,7 +101,7 @@ color: rgb(0, 0, 0);</string>
       <rect>
        <x>10</x>
        <y>50</y>
-       <width>101</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
@@ -115,7 +115,7 @@ color: rgb(0, 0, 0);</string>
     <widget class="QLineEdit" name="edit_use_channels">
      <property name="geometry">
       <rect>
-       <x>120</x>
+       <x>140</x>
        <y>56</y>
        <width>71</width>
        <height>21</height>
@@ -128,7 +128,7 @@ color: rgb(0, 0, 0);</string>
     <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>220</x>
        <y>21</y>
        <width>31</width>
        <height>31</height>
@@ -144,7 +144,7 @@ color: rgb(0, 0, 0);</string>
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>220</x>
        <y>51</y>
        <width>71</width>
        <height>31</height>
@@ -152,6 +152,51 @@ color: rgb(0, 0, 0);</string>
      </property>
      <property name="text">
       <string>Column(s)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Use Time Range :</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="edit_time_range">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>86</y>
+       <width>71</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_8">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>80</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>sec</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -216,6 +261,71 @@ color: rgb(0, 0, 0);</string>
      <string>Results</string>
     </property>
    </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>480</y>
+      <width>311</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Data Info.</string>
+    </property>
+    <widget class="QLabel" name="label_9">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>58</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Rows :</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>30</y>
+       <width>58</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Columns :</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_rows">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>31</y>
+       <width>58</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_cols">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>31</y>
+       <width>58</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -223,7 +333,7 @@ color: rgb(0, 0, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>1130</width>
-     <height>24</height>
+     <height>43</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuControl">

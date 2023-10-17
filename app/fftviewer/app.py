@@ -53,6 +53,8 @@ class viewerWindow(QMainWindow):
         self.sampling_freq = 0.0
         self.use_channels = 1
         self.available_channels = 1
+        self.use_time_range = 1.0 # sec
+        self.csv_rows = 1
         
     # event callback functions
     def on_select_file_open(self):
@@ -60,14 +62,20 @@ class viewerWindow(QMainWindow):
         
         if selected[0]: # 0=abs path
             self.csv_filepath = pathlib.Path(selected[0]).absolute()
-            print(f"Open {self.csv_filepath}")
+            # print(f"Open {self.csv_filepath}")
             self.csv_filename = self.csv_filepath.stem
             
             try :
                 self.csv_data = pd.read_csv(self.csv_filepath)
+                self.sampling_time = 1.0/float(self.edit_sampling_freq.text())
                 self.available_channels = int(self.csv_data.shape[1])
+                self.edit_use_channels.setText(str(self.available_channels))
+                self.csv_rows = self.csv_data.shape[0]
+                self.edit_time_range.setText(str(self.csv_data.shape[0]*self.sampling_time))
                 self.statusBar().showMessage(f"Opened Data Dimension : {self.csv_data.shape}")
                 self.label_filepath.setText(str(self.csv_filepath))
+                self.label_rows.setText(str(self.csv_data.shape[0]))
+                self.label_cols.setText(str(self.csv_data.shape[1]))
                 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"{e}")
@@ -76,13 +84,13 @@ class viewerWindow(QMainWindow):
     # calculate fft & spectogram
     def on_click_calculate(self):
         # clear output table
-        # self.output_model.clear()
         self.output_model.setRowCount(0)
                
         # read user parameters
         self.sampling_freq = float(self.edit_sampling_freq.text())
         self.use_channels = int(self.edit_use_channels.text())
         self.sampling_time = 1/self.sampling_freq
+        self.use_time_range = float(self.edit_time_range.text())
         
         if len(self.csv_filename)<1:
             QMessageBox.critical(self, "Error", f"No file specified to open")
@@ -94,7 +102,8 @@ class viewerWindow(QMainWindow):
             return
         
         # re-open csv file
-        self.csv_data = pd.read_csv(self.csv_filepath, usecols=range(self.use_channels))
+        _rows = int(self.csv_rows*self.use_time_range/(self.csv_rows*self.sampling_time))
+        self.csv_data = pd.read_csv(self.csv_filepath, usecols=range(self.use_channels), nrows=_rows)
         
         # create directory
         self.result_path = self.csv_filepath.parent / self.csv_filename
