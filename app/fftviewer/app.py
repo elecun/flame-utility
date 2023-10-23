@@ -18,6 +18,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from PIL import ImageQt, Image
+import serial
+from sys import platform
 
 # pre-defined options
 WORKING_PATH = pathlib.Path(__file__).parent
@@ -29,6 +31,9 @@ class viewerWindow(QMainWindow):
         super().__init__()
         loadUi("./gui.ui", self)
         
+        # communication device
+        self.device = None
+        
         # menu
         self.actionOpen.triggered.connect(self.on_select_file_open)
         
@@ -38,7 +43,7 @@ class viewerWindow(QMainWindow):
         
         # gui component
         output_table = pyqtSignal(str)
-        self.output_table_columns = ["Output"]
+        self.output_table_columns = ["Output", "Last updated"]
         
         self.output_model = QStandardItemModel()
         self.output_model.setColumnCount(len(self.output_table_columns))
@@ -53,7 +58,7 @@ class viewerWindow(QMainWindow):
         self.sampling_freq = 0.0
         self.use_channels = 1
         self.available_channels = 1
-        self.use_time_range = 1.0 # sec
+        #self.use_time_range = 1.0 # sec
         self.csv_rows = 1
         
     # event callback functions
@@ -71,11 +76,17 @@ class viewerWindow(QMainWindow):
                 self.available_channels = int(self.csv_data.shape[1])
                 self.edit_use_channels.setText(str(self.available_channels))
                 self.csv_rows = self.csv_data.shape[0]
-                self.edit_time_range.setText(str(self.csv_data.shape[0]*self.sampling_time))
+                self.edit_time_range_end.setText(str(self.csv_data.shape[0]*self.sampling_time))
+                self.edit_time_range_start.setText(str(0.0))
                 self.statusBar().showMessage(f"Opened Data Dimension : {self.csv_data.shape}")
                 self.label_filepath.setText(str(self.csv_filepath))
                 self.label_rows.setText(str(self.csv_data.shape[0]))
                 self.label_cols.setText(str(self.csv_data.shape[1]))
+                
+                # update prev result images
+                self.result_path = self.csv_filepath.parent / self.csv_filename
+                self.result_path.mkdir(parents=True, exist_ok=True)
+                self.result_update(self.result_path)
                 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"{e}")
@@ -90,7 +101,8 @@ class viewerWindow(QMainWindow):
         self.sampling_freq = float(self.edit_sampling_freq.text())
         self.use_channels = int(self.edit_use_channels.text())
         self.sampling_time = 1/self.sampling_freq
-        self.use_time_range = float(self.edit_time_range.text())
+        self.use_time_range_start = float(self.edit_time_range_start.text())
+        self.use_time_range_end = float(self.edit_time_range_end.text())
         
         if len(self.csv_filename)<1:
             QMessageBox.critical(self, "Error", f"No file specified to open")
@@ -102,8 +114,12 @@ class viewerWindow(QMainWindow):
             return
         
         # re-open csv file
-        _rows = int(self.csv_rows*self.use_time_range/(self.csv_rows*self.sampling_time))
-        self.csv_data = pd.read_csv(self.csv_filepath, usecols=range(self.use_channels), nrows=_rows)
+        _row_start = int(self.csv_rows*self.use_time_range_start/(self.csv_rows*self.sampling_time))
+        if self.use_time_range_end-self.use_time_range_start<0:
+            QMessageBox.warning(self, "Warning", f"Invalid Time Range")
+            return
+        _rows = int(self.csv_rows*(self.use_time_range_end-self.use_time_range_start)/(self.csv_rows*self.sampling_time))
+        self.csv_data = pd.read_csv(self.csv_filepath, usecols=range(self.use_channels), skiprows=range(1, _row_start), nrows=_rows)
         
         # create directory
         self.result_path = self.csv_filepath.parent / self.csv_filename
@@ -135,8 +151,9 @@ class viewerWindow(QMainWindow):
                     plt.rc('ytick', labelsize=7)
                     
                     # draw raw data
+                    t = np.arange(0.0, float(_data.shape[0]*self.sampling_time), self.sampling_time)
                     plt.subplot(3, 1, 1)
-                    plt.plot(_data, '-')
+                    plt.plot(t, _data, '-')
                     plt.title(f'Raw Data({col_head})', fontsize=13)
                     plt.xlabel(f'Time({self.sampling_time}sec)', fontsize=10, labelpad=5)
                     plt.ylabel('Magnitude', fontsize=10, labelpad=5)
@@ -165,13 +182,19 @@ class viewerWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", f"{e}")
                 
             # update output table
-            output_files = [f for f in self.result_path.iterdir() if f.is_file()]
-            for file in output_files:
-                self.output_model.appendRow([QStandardItem(str(file.name))])
-            self.table_output.resizeColumnsToContents()
+            self.result_update(self.result_path)
             
             QMessageBox.information(self, "Processing", "Done")
-                
+    
+    # result image file list update in path
+    def result_update(self, path):
+        self.output_model.setRowCount(0)
+        output_files = [f for f in self.result_path.iterdir() if f.is_file()]
+        for file in output_files:
+            m_time = os.path.getmtime(file.absolute())
+            dt_m = datetime.fromtimestamp(m_time)
+            self.output_model.appendRow([QStandardItem(str(file.name)), QStandardItem(str(dt_m))])
+        self.table_output.resizeColumnsToContents()
     
     # close event callback function by user
     def closeEvent(self, a0: QCloseEvent) -> None:
