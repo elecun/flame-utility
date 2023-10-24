@@ -16,7 +16,7 @@ import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import signal
+from scipy import signal as scisignal
 from PIL import ImageQt, Image
 import serial
 from sys import platform
@@ -236,7 +236,7 @@ class viewerWindow(QMainWindow):
 
                     # draw spectogram
                     plt.subplot(3, 1, 3)
-                    f, tt, Sxx = signal.spectrogram(_data, fs=self.sampling_freq, scaling='density')
+                    f, tt, Sxx = scisignal.spectrogram(_data, fs=self.sampling_freq, scaling='density')
                     plt.pcolormesh(tt, f, Sxx, shading='gouraud', cmap='jet')
                     plt.title('Spectogram', fontsize=13)
                     plt.xlabel('Time(s)', fontsize=10, labelpad=5)
