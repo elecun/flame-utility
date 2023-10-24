@@ -390,7 +390,7 @@ color: rgb(0, 0, 0);</string>
       <string>Baudrate :</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="edit_device_port">
+    <widget class="QLineEdit" name="edit_serial_port">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -403,7 +403,7 @@ color: rgb(0, 0, 0);</string>
       <string>/dev/tty0</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="edit_device_baudrate">
+    <widget class="QLineEdit" name="edit_serial_baudrate">
      <property name="geometry">
       <rect>
        <x>80</x>
@@ -413,7 +413,7 @@ color: rgb(0, 0, 0);</string>
       </rect>
      </property>
      <property name="text">
-      <string>115200</string>
+      <string>460800</string>
      </property>
     </widget>
     <widget class="QPushButton" name="btn_connect">

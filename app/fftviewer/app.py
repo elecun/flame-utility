@@ -1,5 +1,5 @@
 '''
-FFT & Spectogram viewer
+FFT & Spectogram viewer + with serial comm.
 @author bh.hwang@iae.re.kr
 '''
 
@@ -20,6 +20,8 @@ from scipy import signal
 from PIL import ImageQt, Image
 import serial
 from sys import platform
+import threading
+import signal
 
 # pre-defined options
 WORKING_PATH = pathlib.Path(__file__).parent
@@ -32,14 +34,20 @@ class viewerWindow(QMainWindow):
         loadUi("./gui.ui", self)
         
         # communication device
-        self.device = None
+        self.serial = None
         
         # menu
         self.actionOpen.triggered.connect(self.on_select_file_open)
         
         # event
         self.btn_calculate.clicked.connect(self.on_click_calculate)
+        self.btn_connect.clicked.connect(self.on_click_connect)
+        self.btn_disconnect.clicked.connect(self.on_click_disconnect)
         self.table_output.doubleClicked.connect(self.on_dbclick_select)
+        
+        # signals
+        signal.signal(signal.SIGINT, self.serial_thread_handler)
+        signal.signal(signal.SIGTERM, self.serial_thread_handler)
         
         # gui component
         output_table = pyqtSignal(str)
@@ -50,6 +58,9 @@ class viewerWindow(QMainWindow):
         self.output_model.setHorizontalHeaderLabels(self.output_table_columns)
         self.table_output.setModel(self.output_model)
         
+        # component initialize
+        self.btn_disconnect.setEnabled(False)
+        
         # variables
         self.csv_filepath = pathlib.Path()
         self.result_path = pathlib.Path()
@@ -58,8 +69,9 @@ class viewerWindow(QMainWindow):
         self.sampling_freq = 0.0
         self.use_channels = 1
         self.available_channels = 1
-        #self.use_time_range = 1.0 # sec
-        self.csv_rows = 1
+        self.csv_rows = 1                       # opened csv file number of rows
+        self.serial_read_thread = None          # pyserial object
+        self.serial_read_thread_exit = False    # serial read thread termination flag
         
     # event callback functions
     def on_select_file_open(self):
@@ -91,6 +103,61 @@ class viewerWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"{e}")
 
+    # serial thread exit handler        
+    def serial_thread_handler(self, signum, frame):
+        self.serial_read_thread_exit = True
+        
+    # connect to communication device (serial)
+    def on_click_connect(self):
+        try:
+            if self.serial!=None:
+                raise Exception("Serial communication device is currently in use.")
+            
+            _port = self.edit_serial_port.text()
+            _baudrate = int(self.edit_serial_baudrate.text())
+            self.serial = serial.Serial(port=_port, baudrate=_baudrate, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0, xonxoff=False)
+            if not self.serial.is_open:
+                self.serial.open()
+            
+            self.btn_disconnect.setEnabled(True)
+            self.btn_connect.setEnabled(False)
+            
+            # read thread starting..
+            self.serial_read_thread = threading.Thread(target=self.read_thread, args=None)
+            self.serial_read_thread.start()
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"{e}")
+    
+    # disconnect to communication device (serial)
+    def on_click_disconnect(self):
+        try:
+            signal.siginterrupt(signal.SIGUSR1, False) # read thread exit signal
+            
+            if self.serial!=None:
+                self.serial.close()
+                del self.serial
+                self.serial = None
+                
+                self.btn_disconnect.setEnabled(False)
+                self.btn_connect.setEnabled(True)
+                
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"{e}")
+            
+    # serial comm. data parsing
+    def serial_parse(self, packet):
+        pass
+    
+    # threads in read from  serial
+    def read_thread(self):
+        try:
+            while not self.serial_read_thread_exit:
+                buffer = self.serial.read()
+                self.serial_parse(buffer)# !!! must changing
+        except Exception as e:
+            pass
     
     # calculate fft & spectogram
     def on_click_calculate(self):
@@ -201,6 +268,7 @@ class viewerWindow(QMainWindow):
         # do action for user
         return super().closeEvent(a0)
     
+    # select result in image list & show 
     def on_dbclick_select(self):
         row = self.table_output.currentIndex().row()
         col = self.table_output.currentIndex().column()
