@@ -22,6 +22,7 @@ import serial
 from sys import platform
 import threading
 import signal
+import time
 
 # pre-defined options
 WORKING_PATH = pathlib.Path(__file__).parent
@@ -111,19 +112,21 @@ class viewerWindow(QMainWindow):
     def on_click_connect(self):
         try:
             if self.serial!=None:
+                QMessageBox.warning(self, "Connection Warning", "Serial communication device is currently in use")
                 raise Exception("Serial communication device is currently in use.")
             
-            _port = self.edit_serial_port.text()
-            _baudrate = int(self.edit_serial_baudrate.text())
-            self.serial = serial.Serial(port=_port, baudrate=_baudrate, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0, xonxoff=False)
-            if not self.serial.is_open:
-                self.serial.open()
+            # _port = self.edit_serial_port.text()
+            # _baudrate = int(self.edit_serial_baudrate.text())
+            # self.serial = serial.Serial(port=_port, baudrate=_baudrate, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0, xonxoff=False)
+            # if not self.serial.is_open:
+            #     self.serial.open()
+            #     self.statusBar().showMessage(f"{_port} opened successfully")
             
             self.btn_disconnect.setEnabled(True)
             self.btn_connect.setEnabled(False)
             
             # read thread starting..
-            self.serial_read_thread = threading.Thread(target=self.read_thread, args=None)
+            self.serial_read_thread = threading.Thread(target=self.read_thread, args=self)
             self.serial_read_thread.start()
             
         except Exception as e:
@@ -152,11 +155,16 @@ class viewerWindow(QMainWindow):
     
     # threads in read from  serial
     def read_thread(self):
-        try:
+        try:        
             while not self.serial_read_thread_exit:
-                buffer = self.serial.read()
-                self.serial_parse(buffer)# !!! must changing
+                print("reading....")
+                
+                # buffer = self.serial.read()
+                # self.serial_parse(buffer)# !!! must changing
+                
+                time.sleep(0.1)
         except Exception as e:
+            
             pass
     
     # calculate fft & spectogram

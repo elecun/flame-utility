@@ -4,3 +4,4 @@ matplotlib
 scipy
 pillow
 pyserial
+twisted
